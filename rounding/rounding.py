@@ -66,6 +66,7 @@ def main():
         y = int(y)
     except Exception as e:
         print (e)
+        print ('Using rounding to 0 decimal places')
         y = 0
     print(f'{x} rounded to {y} decimal places: {rd(x, y)}')
     #print(rd(x, int(y), kwargs={'separate_thousands':True}))
