@@ -1,6 +1,6 @@
 import rounding
 
-xlist=[(123.5, 0, '124', {}),
+known_values=[(123.5, 0, '124', {}),
 (-123.5, 0, '-124', {}),
 (17.456, 1, '17.5', {}),
 (-17.456, 1, '-17.5', {}),
@@ -14,6 +14,6 @@ xlist=[(123.5, 0, '124', {}),
 (-123, 1, '-123.0', {'separate_thousands':True}),
 ('1.234.567,555', 2, '1.234.567,56', {'separate_thousands':True, 'thousands_separator':'.', 'decimal_separator':','}),
 ]
-for x, y, z, kwargs in xlist:
+for x, y, z, kwargs in known_values:
 	print(x, y, rounding.rd(x, y, kwargs=kwargs))
 	assert rounding.rd(x, y, kwargs=kwargs) == z, f'{x} roundet to {y} is {(rounding.rd(x, y, kwargs=kwargs))} expecting {z}'

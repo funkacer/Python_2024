@@ -21,7 +21,7 @@ def rd(number, decimal_places=2, **kwargs) -> str:
         elif key == '':
             xxx = kwargs[key]
         else:
-            raise Exception(f"Key argument {key} not accepted!")
+            raise Exception(f"Key argument '{key}' not accepted!")
     round_up = {'0':'1', '1':'2', '2':'3', '3':'4', '4':'5', '5':'6', '6':'7', '7':'8', '8':'9', '9':'0'}
     ret_string = ''
     raw_string = str(number)

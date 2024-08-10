@@ -19,6 +19,7 @@ class KnownValues(unittest.TestCase):
         (-123, 1, '-123.0', {'separate_thousands':True}),
         ('1.234.567,555', 2, '1.234.567,56', {'separate_thousands':True, 'thousands_separator':'.', 'decimal_separator':','}),
         ]
+    unknown_key = 'ahoj'
 
     #musi zacinat test
     def test_rounding_known_values_basic(self):
@@ -32,6 +33,13 @@ class KnownValues(unittest.TestCase):
         for x, y, z, kwargs in self.known_values_thousands:
             result = rounding.rd(x, y, kwargs=kwargs)
             self.assertEqual(z, result)
+    
+    def test_rounding_unknown_key(self):
+        '''rounding.rd(num, dec, kwargs) should raise Error with unknown key'''
+        with self.assertRaises(Exception) as context:
+            rounding.rd(123, 2, kwargs={self.unknown_key: 0})
+        self.assertTrue(f"Key argument '{self.unknown_key}' not accepted!" in str(context.exception),
+		f"Key argument '{self.unknown_key}' not accepted!" + " != " + str(context.exception))
 
 #if __name__ == '__main__':
 #    unittest.main()
