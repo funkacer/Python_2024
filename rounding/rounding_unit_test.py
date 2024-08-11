@@ -18,6 +18,7 @@ class KnownValues(unittest.TestCase):
         (123, 1, '123.0', {'separate_thousands':True}),
         (-123, 1, '-123.0', {'separate_thousands':True}),
         ('1.234.567,555', 2, '1.234.567,56', {'separate_thousands':True, 'thousands_separator':'.', 'decimal_separator':','}),
+        (-11125, -1, '-11 130', {'separate_thousands':True})
         ]
     unknown_key = 'ahoj'
 
@@ -25,21 +26,27 @@ class KnownValues(unittest.TestCase):
     def test_rounding_known_values_basic(self):
         '''rounding.rd(num, dec, kwargs) should give known result with known input'''
         for x, y, z, kwargs in self.known_values_basic:
-            result = rounding.rd(x, y, kwargs=kwargs)
+            result = rounding.rd(x, y, **kwargs)
             self.assertEqual(z, result)
             
     def test_rounding_known_values_thousands(self):
         '''rounding.rd(num, dec, kwargs) should give known result with known input'''
         for x, y, z, kwargs in self.known_values_thousands:
-            result = rounding.rd(x, y, kwargs=kwargs)
+            result = rounding.rd(x, y, **kwargs)
             self.assertEqual(z, result)
     
-    def test_rounding_unknown_key(self):
+    def test_rounding_unknown_key_exception_text(self):
         '''rounding.rd(num, dec, kwargs) should raise Error with unknown key'''
         with self.assertRaises(Exception) as context:
-            rounding.rd(123, 2, kwargs={self.unknown_key: 0})
-        self.assertTrue(f"Key argument '{self.unknown_key}' not accepted!" in str(context.exception),
-		f"Key argument '{self.unknown_key}' not accepted!" + " != " + str(context.exception))
+            rounding.rd(123, 2, **{self.unknown_key: 0})
+        self.assertTrue(f"rd() got an unexpected keyword argument '{self.unknown_key}'" in str(context.exception),
+		f"rd() got an unexpected keyword argument '{self.unknown_key}'" + " != " + str(context.exception))
+
+    def test_rounding_unknown_key_exception_type(self):
+        '''rounding.rd(num, dec, kwargs) should raise TypeError with unknown key'''
+        with self.assertRaises(TypeError):
+            rounding.rd(123, 2, **{self.unknown_key: 0})
+
 
 #if __name__ == '__main__':
 #    unittest.main()

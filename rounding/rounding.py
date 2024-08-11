@@ -1,27 +1,5 @@
-def rd(number, decimal_places=2, **kwargs) -> str:
+def rd(number, decimal_places=2, decimal_separator='.', minus_sign='-', separate_thousands=False, thousands_separator=' ') -> str:
     """Cerny rounding"""
-    decimal_separator='.'
-    minus_sign='-'
-    separate_thousands=False
-    thousands_separator=' '
-    # parse kwargs
-    #print(kwargs)
-    #('decimal_separator', 'minus_sign', 'thousands_separate', 'thousands_separator'):
-    if 'kwargs' in kwargs.keys():
-        kwargs = kwargs['kwargs']
-    for key in kwargs:
-        if key == 'decimal_separator':
-            decimal_separator = kwargs[key]
-        elif key == 'minus_sign':
-            minus_sign = kwargs[key]
-        elif key == 'separate_thousands':
-            separate_thousands = kwargs[key]
-        elif key == 'thousands_separator':
-            thousands_separator = kwargs[key]
-        elif key == '':
-            xxx = kwargs[key]
-        else:
-            raise Exception(f"Key argument '{key}' not accepted!")
     round_up = {'0':'1', '1':'2', '2':'3', '3':'4', '4':'5', '5':'6', '6':'7', '7':'8', '8':'9', '9':'0'}
     ret_string = ''
     raw_string = str(number)
