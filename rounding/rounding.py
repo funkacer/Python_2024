@@ -10,6 +10,17 @@ def rd(number, decimal_places=2, decimal_separator='.', minus_sign='-', separate
     raw_string = raw_string.replace(decimal_separator, '')
     if dec_place == -1:
         dec_place = len(raw_string)
+    if abs(decimal_places) > dec_place and decimal_places < 0:
+        #sem ještě přidat doplnění nul
+        decimal_places = -1*dec_place
+    if abs(decimal_places) == dec_place and decimal_places < 0: #and raw_string[0] in ('5', '6', '7', '8', '9'):
+        raw_string = '0' + raw_string
+        dec_place += 1
+    '''
+    if abs(decimal_places) > dec_place and decimal_places < 0:
+        raw_string = '0'*(abs(decimal_places) - dec_place) + raw_string
+        dec_place += abs(decimal_places) - dec_place
+    '''
     for i, num in enumerate(raw_string):
         #-1 kvůli chybějícímu decimal_separator
         if i == (dec_place + decimal_places -1) or i == len(raw_string)-1:
@@ -24,6 +35,8 @@ def rd(number, decimal_places=2, decimal_separator='.', minus_sign='-', separate
             else:
                 ret_string += raw_string[i]
             break
+    if len(ret_string) < dec_place:
+        ret_string += '0' * (dec_place - (len(ret_string)))
     if len(ret_string) > dec_place - decimal_places:
         ret_string=ret_string[:dec_place] + decimal_separator + ret_string[dec_place:]
         if len(ret_string) - dec_place <= decimal_places:
