@@ -1,64 +1,81 @@
-def rd(number, decimal_places=2, decimal_separator='.', minus_sign='-', separate_thousands=False, thousands_separator=' ') -> str:
+def rd(number, decimal_places=2, decimal_separator='.', minus_sign='-', separate_thousands=False, thousands_separator=' ', integer_places=0, round_type='5up') -> str:
     """Cerny rounding"""
+    #round_type=['None', '5up', 'Floor', 'Ceiling']
+    verbose=True
     round_up = {'0':'1', '1':'2', '2':'3', '3':'4', '4':'5', '5':'6', '6':'7', '7':'8', '8':'9', '9':'0'}
     ret_string = ''
-    raw_string = str(number)
+    raw_string = str(number).strip()
     raw_string = raw_string.replace(thousands_separator, '')
     minus_place = raw_string.find(minus_sign)
     raw_string = raw_string.replace(minus_sign, '')
-    dec_place = raw_string.find(decimal_separator)
-    raw_string = raw_string.replace(decimal_separator, '')
-    if dec_place == -1:
-        dec_place = len(raw_string)
-    '''
-    if abs(decimal_places) > dec_place and decimal_places < 0:
-        #sem ještě přidat doplnění nul
-        decimal_places = -1*dec_place
-    if abs(decimal_places) == dec_place and decimal_places < 0: #and raw_string[0] in ('5', '6', '7', '8', '9'):
+    decimal_place = raw_string.find(decimal_separator)
+    # když začíná .tak mi to nefunguje
+    if decimal_place == 0:
         raw_string = '0' + raw_string
-        dec_place += 1
-    if decimal_places < 0:
-        decimal_places += 1
-    if abs(decimal_places) >= dec_place and decimal_places < 0:
-        raw_string = '0'*(abs(decimal_places) - dec_place + 1) + raw_string
-        dec_place += abs(decimal_places) - dec_place + 1
-    '''
-    do_round_up = False
-    # musim to iterovat pozadu a postupne pridat cisla, kdyz zaokrouhluju nahoru a dalsi je 9
-    # at to nemusim delat nadvakrat
-    for i, num in enumerate(raw_string):
-        #-1 kvůli chybějícímu decimal_separator
-        if i == (dec_place + decimal_places -1) or i == len(raw_string)-1:
-            ret_string += raw_string[:i]
-            if len(raw_string[i:]) > 1:
-                decision_number = raw_string[(i+1)]
-                #print(decision_number)
-                if decision_number in ('0', '1', '2', '3', '4'):
-                    ret_string += raw_string[i]
-                else:
-                    ret_string += round_up[raw_string[i]]
-                    do_round_up = True
+        decimal_place = 1
+    raw_string = raw_string.replace(decimal_separator, '')
+    if verbose: print('decimal_place', decimal_place)
+    if verbose: print('raw_string', raw_string)
+    if decimal_place == -1:
+        decimal_place = len(raw_string)
+    if round_type != 'None':
+        # potrebuju se dostat na decision_number
+        decision_place = decimal_place + decimal_places
+        if verbose: print('decision_place', decision_place)
+        if (decision_place < 0):
+            # zaokrouhluju 999 na -4 a vic des.mist a víc, takže 1000 na -4 je 0000
+            if verbose: print('decision_place je < 0, vratim 0')
+            ret_string = '0'
+            decimal_place = 1
+            #decimal_place = abs(decimal_places)
+        elif (decision_place >= len(raw_string)):
+            # vratim cele a nasledne dodelam '0' na dalsich des mistech
+            if verbose: print('decision_place je >= len(raw_string):', len(raw_string), '- vratim cele a dodelam 0')
+            ret_string = raw_string
+        else:
+            #jdu zaokrouhlovat
+            if raw_string[decision_place] in ('0', '1', '2', '3', '4') and round_type != 'Ceiling' or round_type == 'Floor':
+                #zaokrouhluju dolu
+                ret_string += raw_string[:decision_place]
+                if verbose: print('zaokrouhluju dolu, decision number je:', raw_string[decision_place], ', vracím:', ret_string)
             else:
-                ret_string += raw_string[i]
-            break
-    # repair if round up and all numbers are 9
-    if do_round_up:
-        rett_string = ''
-        for i in range(len(ret_string)-1, -1, -1):
-            if ret_string[i] == '9':
-                rett_string += 0
-                if i == 0: ret_string = '1' + rett_string
-            else:
-                rett_string += round_up[ret_string[i]]
-                break
-    if len(ret_string) < dec_place:
-        ret_string += '0' * (dec_place - (len(ret_string)))
-    if len(ret_string) > dec_place - decimal_places:
-        ret_string=ret_string[:dec_place] + decimal_separator + ret_string[dec_place:]
-        if len(ret_string) - dec_place <= decimal_places:
-            ret_string += '0' * (decimal_places - (len(ret_string) - dec_place) + 1)
+                #zaokrouhluju nahoru
+                for i in range (decision_place, -1, -1):
+                    if i == 0:
+                        ret_string = '1'
+                        decimal_place += 1
+                        if verbose: print('jsem na nultém místě a mám to zaokrouhlit nahoru, vracím 1 a ostatní doplním 0 až do decimal place:', decimal_place)
+                        break
+                    else:
+                        if raw_string[(i-1)] != '9':
+                            ret_string = raw_string[:(i-1)] + round_up[raw_string[(i-1)]]
+                            if verbose: print('hotovo, decision number je:', raw_string[i], 'na místě:', i, 'a předchozí není 9, vracím:', ret_string)
+                            break
+                        if verbose: print('zaokrouhluju nahoru, decision number je:', raw_string[i], 'na místě:', i)
+
+        # pokud jsem zaokrouhloval na - des mista, meno bylo typ 799.9, tak musim doplnit chybejici 0
+        # ta je bud do des. mista, nebo do abs(decimal_places), pokud jdem zadal abs(-decimal_places) > decimal_place
+        if len(ret_string) < decimal_place:
+            ret_string += '0'*(decimal_place - len(ret_string))
+    else:
+        ret_string = raw_string
+    # doplnim des. čárku a chybějící des. místa
+    if len(ret_string) > decimal_place - decimal_places:
+        ret_string=ret_string[:decimal_place] + decimal_separator + ret_string[decimal_place:]
+        if len(ret_string) - decimal_place <= decimal_places:
+            ret_string += '0'*(decimal_places - (len(ret_string) - decimal_place) + 1)
+    if decimal_place < integer_places:
+        ret_string = '0'*(integer_places - decimal_place) + ret_string
+        decimal_place = integer_places
+    # nechci přidat mínus k nule!
+    try:
+        x = float(ret_string)
+        if x == 0 and minus_place > -1:
+            minus_place = -1
+    except Exception as e:
+        pass
     if separate_thousands:
-        for i, j in enumerate(range(dec_place -1, -1, -1)):
+        for i, j in enumerate(range(decimal_place -1, -1, -1)):
             #print(ret_string[j])
             if i % 3 == 2 and j > 0:
                 ret_string=ret_string[:j] + thousands_separator + ret_string[j:]
@@ -67,16 +84,18 @@ def rd(number, decimal_places=2, decimal_separator='.', minus_sign='-', separate
     return ret_string
 
 def main():
-    x=input("Zadejte číslo:")
-    y=input("Des. místa:")
-    try:
-        y = int(y)
-    except Exception as e:
-        print (e)
-        print ('Using rounding to 0 decimal places')
-        y = 0
-    print(f'{x} rounded to {y} decimal places: {rd(x, y)}')
-    #print(rd(x, int(y), kwargs={'separate_thousands':True}))
+    x = ' '
+    while x != '':
+        x=input("Zadejte číslo:")
+        y=input("Des. místa:")
+        try:
+            y = int(y)
+        except Exception as e:
+            print (e)
+            print ('Using rounding to 0 decimal places')
+            y = 0
+        #print(f'{x} rounded to {y} decimal places: {rd(x, y)}')
+        print(f'{x} rounded to {y} decimal places:', rd(x, y, **{'separate_thousands':True}))
 
 if __name__ == '__main__':
     main()
