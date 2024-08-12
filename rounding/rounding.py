@@ -17,12 +17,15 @@ def rd(number, decimal_places=2, decimal_separator='.', minus_sign='-', separate
     if abs(decimal_places) == dec_place and decimal_places < 0: #and raw_string[0] in ('5', '6', '7', '8', '9'):
         raw_string = '0' + raw_string
         dec_place += 1
-    '''
     if decimal_places < 0:
         decimal_places += 1
     if abs(decimal_places) >= dec_place and decimal_places < 0:
         raw_string = '0'*(abs(decimal_places) - dec_place + 1) + raw_string
         dec_place += abs(decimal_places) - dec_place + 1
+    '''
+    do_round_up = False
+    # musim to iterovat pozadu a postupne pridat cisla, kdyz zaokrouhluju nahoru a dalsi je 9
+    # at to nemusim delat nadvakrat
     for i, num in enumerate(raw_string):
         #-1 kvůli chybějícímu decimal_separator
         if i == (dec_place + decimal_places -1) or i == len(raw_string)-1:
@@ -34,9 +37,20 @@ def rd(number, decimal_places=2, decimal_separator='.', minus_sign='-', separate
                     ret_string += raw_string[i]
                 else:
                     ret_string += round_up[raw_string[i]]
+                    do_round_up = True
             else:
                 ret_string += raw_string[i]
             break
+    # repair if round up and all numbers are 9
+    if do_round_up:
+        rett_string = ''
+        for i in range(len(ret_string)-1, -1, -1):
+            if ret_string[i] == '9':
+                rett_string += 0
+                if i == 0: ret_string = '1' + rett_string
+            else:
+                rett_string += round_up[ret_string[i]]
+                break
     if len(ret_string) < dec_place:
         ret_string += '0' * (dec_place - (len(ret_string)))
     if len(ret_string) > dec_place - decimal_places:
