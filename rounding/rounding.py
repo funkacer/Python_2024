@@ -1,7 +1,6 @@
-def rd(number, decimal_places=2, decimal_separator='.', minus_sign='-', separate_thousands=False, thousands_separator=' ', integer_places=0, round_type='5up') -> str:
+def rd(number, decimal_places=2, decimal_separator='.', minus_sign='-', separate_thousands=False, thousands_separator=' ', integer_places=0, round_type='5up', verbose=False) -> str:
     """Cerny rounding"""
     #round_type=['None', '5up', 'Floor', 'Ceiling']
-    verbose=True
     round_up = {'0':'1', '1':'2', '2':'3', '3':'4', '4':'5', '5':'6', '6':'7', '7':'8', '8':'9', '9':'0'}
     ret_string = ''
     raw_string = str(number).strip()
