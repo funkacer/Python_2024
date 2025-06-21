@@ -13,5 +13,10 @@ df = pd.DataFrame({'Boys': [67, 78],
 
 print(df)
 
-html = getBarChart(df, html=True)
+
+# bez popisku
+df.plot(kind='bar', stacked=True)
+
+# s popisky
+getBarChart(df)
 
