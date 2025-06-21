@@ -15,6 +15,3 @@ print(df)
 
 html = getBarChart(df, html=True)
 
-with open('obrazek.png', 'w') as file:
-    file.write(html)
-

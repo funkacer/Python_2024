@@ -18,36 +18,32 @@ def rd(x,y=0):
         result = ''
     return result
 
-# dodělat možnost na procenta do 100% a label na osu
-def getBarChart(df, columns = [], type='v', precision=0, title='Graf', label='Osa', width=0.8, rotation=0, figsize=(5, 5), html=False):
+def getBarChart(df, columns = [], type='v', precision=0, normalize=False, title='Title', label='Label',
+                width=0.8, rotation=0, figsize=(5, 5), file='', html=False):
     '''Tato funkce vytváří grafy s popisky hodnot'''
-    cols = []
-    if len(columns) > 0:
-        for i, column in enumerate(columns):
-            #raise error if not found
-            cols.append(df.columns.get_loc(column))
+    if len(columns) == 0:
+        columns = df.columns
+    if normalize:
+        df = df[columns].div(df[columns].sum(axis=1), axis=0)*100
     else:
-        for i, column in enumerate(df.columns):
-            #raise error if not found
-            cols.append(df.columns.get_loc(column))
-    ind = np.arange(len(df.index))
+        df = df[columns]
+    #ind = np.arange(len(df.index))
     if type == 'h' or type == 'hr' or type == 'v' or type == 'vr':
-        if type == 'v' or type == 'vr':
-            fig, ax = plt.subplots(figsize = figsize)
-            rectss = []
-            bottom = np.zeros(len(df.index))
-            for i in range(len(cols)):
-                if type == 'v':
-                    rectss.append(plt.bar(x=df.index, height=df[df.columns[cols[i]]], bottom=bottom, width=width, label=df.columns[cols[i]]))
-                    bottom += np.array(df[df.columns[cols[i]]])
-                else:
-                    rectss.append(plt.bar(x=df.index[::-1], height=df[df.columns[cols[i]]][::-1], bottom=bottom, width=width, label=df.columns[cols[i]]))
-                    bottom += np.array(df[df.columns[cols[i]]][::-1])
-            bottom = np.zeros(len(df.index))
+        if type == 'vr' or type == 'hr':
+            df = df[::-1]
+            type = type[0]
+        fig, ax = plt.subplots(figsize = figsize)
+        rectss = []
+        bottom = np.zeros(len(df))
+        if type == 'v':
+            for column in columns:
+                rectss.append(plt.bar(x=df.index, height=df[column], bottom=bottom, width=width, label=column))
+                bottom += np.array(df[column])
+            bottom = np.zeros(len(df))
             for rects in rectss:
                 bott = []
                 for i, rect in enumerate(rects):
-                    if len(cols) == 1:
+                    if len(columns) == 1:
                         ax.annotate(text=rd(rect.get_height(), precision), xy=(rect.get_x() + rect.get_width()/2, rect.get_height()), ha='center', va='bottom')
                     else:
                         ax.annotate(text=rd(rect.get_height(), precision), xy=(rect.get_x() + rect.get_width()/2, rect.get_height()/2 + bottom[i]), ha='center', va='center')
@@ -58,35 +54,30 @@ def getBarChart(df, columns = [], type='v', precision=0, title='Graf', label='Os
             else:
                 plt.xticks(rotation = rotation)
             plt.ylabel(label)
-        if type == 'h' or type == 'hr':
-            fig, ax = plt.subplots(figsize = figsize)
-            rectss = []
-            bottom = np.zeros(len(df.index))
-            for i in range(len(cols)):
-                if type == 'h':
-                    rectss.append(plt.barh(y=df.index, width=df[df.columns[cols[i]]], left=bottom, height=width, label=df.columns[cols[i]]))
-                    bottom += np.array(df[df.columns[cols[i]]])
-                else:
-                    rectss.append(plt.barh(y=df.index[::-1], width=df[df.columns[cols[i]]][::-1], left=bottom, height=width, label=df.columns[cols[i]]))
-                    bottom += np.array(df[df.columns[cols[i]]][::-1])
-            bottom = np.zeros(len(df.index))
+        if type == 'h':
+            for column in columns:
+                rectss.append(plt.barh(y=df.index, width=df[column], left=bottom, height=width, label=column))
+                bottom += np.array(df[column])
+            bottom = np.zeros(len(df))
             for rects in rectss:
                 bott = []
                 for i, rect in enumerate(rects):
-                    if len(cols) == 1:
+                    if len(columns) == 1:
                         ax.annotate(text=rd(rect.get_width(),precision), xy=(rect.get_width()+bottom[i], rect.get_y()+rect.get_height()/2), ha='left', va='center')
                     else:
                         ax.annotate(text=rd(rect.get_width(),precision), xy=(rect.get_width()/2+bottom[i], rect.get_y()+rect.get_height()/2), ha='center', va='center')
                     bott.append(rect.get_width())
                 bottom += np.array(bott)
-            if rotation < 0 or rotation > 90:
+            if rotation > 0 and rotation < 90:
                 plt.yticks(rotation = rotation, rotation_mode='anchor', ha='right')
             else:
-                plt.yticks(rotation = rotation)
+                plt.yticks(rotation = rotation, va='center')
             plt.xlabel(label)
         plt.title(title)
         ax.legend(loc='upper center', bbox_to_anchor=(1.1, 1), ncol=1, fancybox=True, shadow=True)
         #plt.show()
+        if file != '':
+            fig.savefig(file, dpi=fig.dpi, bbox_inches='tight')
         if html:
             buf = BytesIO()
             fig.savefig(buf, format="png", bbox_inches='tight')
