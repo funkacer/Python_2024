@@ -2,9 +2,15 @@ from _Grafy import getBarChart
 
 import pandas as pd
 import os
+import sys
+
+import seaborn as sns
 
 print("Directory:", os.getcwd())
 # /home/funkacer/_venv/_git/Python_2024/graphs
+print()
+
+print("Executable:", sys.executable)
 print()
 
 df = pd.DataFrame({'Boys': [67, 78],
