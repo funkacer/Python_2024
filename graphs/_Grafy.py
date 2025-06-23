@@ -30,11 +30,13 @@ def getBarChart(df, columns = [], kind='v', precision=0, normalize=False, revers
         else:
             for i, column in enumerate(df.columns):
                 cols.append(df.columns.get_loc(column))
-        if normalize:
-            df = df.iloc[:, cols].div(df.iloc[:, cols].sum(axis=1), axis=0)*100
-        else:
-            df = df.iloc[:, cols]
+        
+        df = df.iloc[:, cols]
         columns = df.columns
+        if total:
+            df.loc['Total'] = df.sum()
+        if normalize:
+            df = df.div(df.sum(axis=1), axis=0)*100
         if reverse:
             df = df[::-1]
         fig, ax = plt.subplots(figsize = figsize)
