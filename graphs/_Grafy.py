@@ -18,64 +18,87 @@ def rd(x,y=0):
         result = ''
     return result
 
-def getBarChart(df, columns = [], type='v', precision=0, normalize=False, title='Title', label='Label',
-                width=0.8, rotation=0, figsize=(5, 5), file='', html=False):
+def getBarChart(df, columns = [], kind='v', precision=0, normalize=False, reverse=False, total=False,
+                title='', label='', width=0.8, rotation=0, figsize=(5, 5), file='', html=False):
     '''Tato funkce vytváří grafy s popisky hodnot'''
-    if len(columns) == 0:
+    if kind =='v' or kind =='vs' or kind =='h' or kind =='hs':
+        # šaráda s cols je kvůli False, True v názvech sloupců (viz Titanic)
+        cols = []
+        if columns != []:
+            for i, column in enumerate(columns):
+                cols.append(df.columns.get_loc(column))
+        else:
+            for i, column in enumerate(df.columns):
+                cols.append(df.columns.get_loc(column))
+        if normalize:
+            df = df.iloc[:, cols].div(df.iloc[:, cols].sum(axis=1), axis=0)*100
+        else:
+            df = df.iloc[:, cols]
         columns = df.columns
-    if normalize:
-        df = df[columns].div(df[columns].sum(axis=1), axis=0)*100
-    else:
-        df = df[columns]
-    #ind = np.arange(len(df.index))
-    if type == 'h' or type == 'hr' or type == 'v' or type == 'vr':
-        if type == 'vr' or type == 'hr':
+        if reverse:
             df = df[::-1]
-            type = type[0]
         fig, ax = plt.subplots(figsize = figsize)
         rectss = []
         bottom = np.zeros(len(df))
-        if type == 'v':
+        ticks = np.arange(len(df))  # the x/y ticks locations
+        width1 = 0    # pro popisky
+        if  kind =='v' or  kind =='h':
+            width = width / len(columns) #0.25  # the width of the bars
+            width1 = width/2*(len(columns)-1)
+        multiplier = 0
+        if kind =='v' or kind =='vs':
             for column in columns:
-                rectss.append(plt.bar(x=df.index, height=df[column], bottom=bottom, width=width, label=column))
+                offset = width * multiplier
+                if kind =='vs':
+                    rectss.append(ax.bar(x=ticks, height=df[column], bottom=bottom, width=width, label=column))
+                elif kind =='v':
+                    rectss.append(ax.bar(x=ticks + offset, height=df[column], width=width, label=column))
+                multiplier += 1
                 bottom += np.array(df[column])
             bottom = np.zeros(len(df))
             for rects in rectss:
                 bott = []
                 for i, rect in enumerate(rects):
-                    if len(columns) == 1:
+                    if len(columns) == 1 or kind =='v':
                         ax.annotate(text=rd(rect.get_height(), precision), xy=(rect.get_x() + rect.get_width()/2, rect.get_height()), ha='center', va='bottom')
                     else:
                         ax.annotate(text=rd(rect.get_height(), precision), xy=(rect.get_x() + rect.get_width()/2, rect.get_height()/2 + bottom[i]), ha='center', va='center')
                     bott.append(rect.get_height())
                 bottom += np.array(bott)
             if rotation > 0 and rotation < 90:
-                plt.xticks(rotation = rotation, rotation_mode='anchor', ha='right')
+                ax.set_xticks(ticks + width1, df.index, rotation = rotation, rotation_mode='anchor', ha='right')
             else:
-                plt.xticks(rotation = rotation)
-            plt.ylabel(label)
-        if type == 'h':
+                ax.set_xticks(ticks + width1, df.index, rotation = rotation)
+            ax.set_xlabel(df.index.name)
+            ax.set_ylabel(label)
+            #ax.set_xticks(x + width, species)
+        if kind =='h' or kind =='hs':
             for column in columns:
-                rectss.append(plt.barh(y=df.index, width=df[column], left=bottom, height=width, label=column))
+                offset = width * multiplier
+                if kind =='hs':
+                    rectss.append(ax.barh(y=ticks, width=df[column], left=bottom, height=width, label=column))
+                elif kind =='h':
+                    rectss.append(ax.barh(y=ticks + offset, width=df[column], height=width, label=column))
+                multiplier += 1
                 bottom += np.array(df[column])
             bottom = np.zeros(len(df))
             for rects in rectss:
                 bott = []
                 for i, rect in enumerate(rects):
-                    if len(columns) == 1:
-                        ax.annotate(text=rd(rect.get_width(),precision), xy=(rect.get_width()+bottom[i], rect.get_y()+rect.get_height()/2), ha='left', va='center')
+                    if len(columns) == 1 or kind =='h':
+                        ax.annotate(text=rd(rect.get_width(),precision), xy=(rect.get_width(), rect.get_y()+rect.get_height()/2), ha='left', va='center')
                     else:
                         ax.annotate(text=rd(rect.get_width(),precision), xy=(rect.get_width()/2+bottom[i], rect.get_y()+rect.get_height()/2), ha='center', va='center')
                     bott.append(rect.get_width())
                 bottom += np.array(bott)
             if rotation > 0 and rotation < 90:
-                plt.yticks(rotation = rotation, rotation_mode='anchor', ha='right')
+                ax.set_yticks(ticks + width1, df.index, rotation = rotation, rotation_mode='anchor', ha='right')
             else:
-                plt.yticks(rotation = rotation, va='center')
-            plt.xlabel(label)
-        plt.title(title)
-        ax.legend(loc='upper center', bbox_to_anchor=(1.1, 1), ncol=1, fancybox=True, shadow=True)
-        #plt.show()
+                ax.set_yticks(ticks + width1, df.index, rotation = rotation, va='center')
+            ax.set_xlabel(label)
+            ax.set_ylabel(df.index.name)
+        ax.legend(title=df.columns.name, loc='upper center', bbox_to_anchor=(1.1, 1), ncol=1, fancybox=True, shadow=True)
+        ax.set_title(title)
         if file != '':
             fig.savefig(file, dpi=fig.dpi, bbox_inches='tight')
         if html:
@@ -85,4 +108,4 @@ def getBarChart(df, columns = [], type='v', precision=0, normalize=False, title=
             data = base64.b64encode(buf.getbuffer()).decode("ascii")
             return f"<img src='data:image/png;base64,{data}'/>"
     else:
-        raise Exception("Sorry, wrong type(only accept 'h', 'hr', 'v', 'vr')")
+        raise Exception("Sorry, wrong type(only accept 'h', 'hs', 'v', 'vs')")
