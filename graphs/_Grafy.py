@@ -33,8 +33,12 @@ def getBarChart(df, columns = [], kind='v', precision=0, normalize=False, revers
         
         df = df.iloc[:, cols]
         columns = df.columns
-        if total:
+        if normalize and total != False:
             df.loc['Total'] = df.sum()
+        elif total == True or total == 'sum':
+            df.loc['Total (sum)'] = df.sum()
+        elif total == 'mean':
+            df.loc['Total (mean)'] = df.mean()
         if normalize:
             df = df.div(df.sum(axis=1), axis=0)*100
         if reverse:
@@ -47,7 +51,10 @@ def getBarChart(df, columns = [], kind='v', precision=0, normalize=False, revers
         if  kind =='v' or  kind =='h':
             width = width / len(columns) #0.25  # the width of the bars
             width1 = width/2*(len(columns)-1)
-        multiplier = 0
+        if reverse:
+            multiplier = len(columns)-1
+        else:
+            multiplier = 0
         if kind =='v' or kind =='vs':
             for column in columns:
                 offset = width * multiplier
@@ -55,7 +62,10 @@ def getBarChart(df, columns = [], kind='v', precision=0, normalize=False, revers
                     rectss.append(ax.bar(x=ticks, height=df[column], bottom=bottom, width=width, label=column))
                 elif kind =='v':
                     rectss.append(ax.bar(x=ticks + offset, height=df[column], width=width, label=column))
-                multiplier += 1
+                if reverse:
+                    multiplier -= 1
+                else:
+                    multiplier += 1
                 bottom += np.array(df[column])
             bottom = np.zeros(len(df))
             for rects in rectss:
@@ -81,7 +91,10 @@ def getBarChart(df, columns = [], kind='v', precision=0, normalize=False, revers
                     rectss.append(ax.barh(y=ticks, width=df[column], left=bottom, height=width, label=column))
                 elif kind =='h':
                     rectss.append(ax.barh(y=ticks + offset, width=df[column], height=width, label=column))
-                multiplier += 1
+                if reverse:
+                    multiplier -= 1
+                else:
+                    multiplier += 1
                 bottom += np.array(df[column])
             bottom = np.zeros(len(df))
             for rects in rectss:
