@@ -83,7 +83,6 @@ def rd(number, decimal_places=2, decimal_separator={'.':','}, minus_sign='-', th
                             if verbose: print('hotovo, decision number je:', raw_string[i], 'na místě:', i, 'a předchozí není 9, vracím:', ret_string)
                             break
                         if verbose: print('zaokrouhluju nahoru, decision number je:', raw_string[i], 'na místě:', i)
-
         # pokud jsem zaokrouhloval na - des mista, meno bylo typ 799.9, tak musim doplnit chybejici 0
         # ta je bud do des. mista, nebo do abs(decimal_places), pokud jdem zadal abs(-decimal_places) > decimal_place
         if len(ret_string) < decimal_place:
