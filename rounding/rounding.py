@@ -190,7 +190,7 @@ def main():
             print ('Using rounding to 0 decimal places')
             y = 0
         #print(f'{x} rounded to {y} decimal places: {rd(x, y)}')
-        print(f'{x} rounded to {y} decimal places:', rd(x, y, **{'separate_thousands':True}))
+        print(f'{x} rounded to {y} decimal places:', rd(x, y, **{'thousands_separator':{'':' '} }))
 
 if __name__ == '__main__':
     main()
